@@ -22,6 +22,41 @@ MAP_INTERFACE_SPEED = {
     "10 Half": 10,
 }
 
+MAP_SUBNETMASK_PREFIXLENGTH = {
+    "0.0.0.0":	        0,
+    "128.0.0.0":	    1,
+    "192.0.0.0":	    2,
+    "224.0.0.0":	    3,
+    "240.0.0.0":	    4,
+    "248.0.0.0":	    5,
+    "252.0.0.0":	    6,
+    "254.0.0.0":	    7,
+    "255.0.0.0":	    8,
+    "255.128.0.0":	    9,
+    "255.192.0.0":      10,
+    "255.224.0.0":	    11,
+    "255.240.0.0":	    12,
+    "255.248.0.0":	    13,
+    "255.252.0.0":	    14,
+    "255.254.0.0":	    15,
+    "255.255.0.0":	    16,
+    "255.255.128.0":	17,
+    "255.255.192.0":	18,
+    "255.255.224.0":	19,
+    "255.255.240.0":	20,
+    "255.255.248.0":	21,
+    "255.255.252.0":	22,
+    "255.255.254.0":	23,
+    "255.255.255.0":	24,
+    "255.255.255.128":	25,
+    "255.255.255.192":	26,
+    "255.255.255.224":	27,
+    "255.255.255.240":	28,
+    "255.255.255.248":	29,
+    "255.255.255.252":	30,
+    "255.255.255.254":	31,
+    "255.255.255.255":	32
+}
 
 class NetgearDriver(NetworkDriver):
     """NAPALM Netgear ProSafe Handler."""
@@ -354,3 +389,40 @@ class NetgearDriver(NetworkDriver):
             'fqdn': '',
             'interface_list': []
         }
+    
+    def get_interfaces_ip(self):
+        """
+        Get interface ip details.
+
+        Returns a dict of dicts
+
+        Example Output:
+
+        {   u'FastEthernet8': {   'ipv4': {   u'10.66.43.169': {   'prefix_length': 22}}},
+            u'Loopback555': {   'ipv4': {   u'192.168.1.1': {   'prefix_length': 24}},
+                                'ipv6': {   u'1::1': {   'prefix_length': 64},
+                                            u'2001:DB8:1::1': {   'prefix_length': 64},
+                                            u'2::': {   'prefix_length': 64},
+                                            u'FE80::3': {   'prefix_length': 10}}},
+            u'Tunnel0': {   'ipv4': {   u'10.63.100.9': {   'prefix_length': 24}}},
+            u'Tunnel1': {   'ipv4': {   u'10.63.101.9': {   'prefix_length': 24}}},
+            u'Vlan100': {   'ipv4': {   u'10.40.0.1': {   'prefix_length': 24},
+                                        u'10.41.0.1': {   'prefix_length': 24},
+                                        u'10.65.0.1': {   'prefix_length': 24}}},
+            u'Vlan200': {   'ipv4': {   u'10.63.176.57': {   'prefix_length': 29}}}}
+        """
+        command = "show ip interface brief"
+        output = self._send_command(command)
+        interface_list = parseFixedLenght(["Interface","State","IP Address","IP Mask","TYPE", "Method"], output.splitlines())
+        interfaces = {}
+        for a in interface_list:
+            if(a["Interface"]== ""):
+                break
+            if(a["Interface"] not in interfaces):
+                interfaces[a["Interface"]] = {
+                    "ipv4": {}
+                }
+            interfaces[a["Interface"]]["ipv4"][a["IP Address"]] = {
+                "prefix_length": MAP_SUBNETMASK_PREFIXLENGTH[a["IP Mask"]]
+            }
+        return interfaces

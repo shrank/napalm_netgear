@@ -9,6 +9,7 @@ Uses netmiko netgear prosafe driver. Tested with M4300 and M4250.
  - get_config
  - load_merge_candidate
  - commit_config
+ - get_interfaces_ip
 
 *partially implemented:*
  - get_mac_address_table
