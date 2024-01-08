@@ -389,6 +389,7 @@ class NetgearDriver(NetworkDriver):
             'fqdn': '',
             'interface_list': []
         }
+    
     def get_interfaces_ip(self):
         """
         Get interface ip details.
